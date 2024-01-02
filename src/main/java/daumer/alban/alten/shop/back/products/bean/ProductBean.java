@@ -1,5 +1,6 @@
 package daumer.alban.alten.shop.back.products.bean;
 
+import daumer.alban.alten.shop.back.products.enums.CategoryEnum;
 import daumer.alban.alten.shop.back.products.enums.InventoryStatusEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,7 @@ public class ProductBean {
     @NonNull
     InventoryStatusEnum inventoryStatus;
     @NonNull
-    String category;
+    CategoryEnum category;
     // nullable fonctionellement
     String image;
     Long rating;

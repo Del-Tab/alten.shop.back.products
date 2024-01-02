@@ -1,5 +1,6 @@
 package daumer.alban.alten.shop.back.products.model;
 
+import daumer.alban.alten.shop.back.products.enums.CategoryEnum;
 import daumer.alban.alten.shop.back.products.enums.InventoryStatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,8 +52,8 @@ public class Product {
     InventoryStatusEnum inventoryStatus;
 
     @NonNull
-    @Column(nullable = false)
-    String category;
+    @Enumerated(EnumType.STRING)
+    CategoryEnum category;
 
     @Column
     String image;
