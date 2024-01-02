@@ -1,16 +1,14 @@
 package daumer.alban.alten.shop.back.products.bean;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
 @Data
-@RequiredArgsConstructor
 @NoArgsConstructor
 public class DataListBean<T> {
-    @NonNull
+    @NotBlank
     List<T> data;
 }

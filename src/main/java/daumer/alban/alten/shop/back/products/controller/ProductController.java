@@ -3,6 +3,7 @@ package daumer.alban.alten.shop.back.products.controller;
 import daumer.alban.alten.shop.back.products.bean.ProductBean;
 import daumer.alban.alten.shop.back.products.bean.ProductBeanNoId;
 import daumer.alban.alten.shop.back.products.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,7 +32,7 @@ public class ProductController {
     }
 
     @PostMapping(value = "/")
-    public ResponseEntity<Long> createProduct(@RequestBody ProductBeanNoId body) {
+    public ResponseEntity<Long> createProduct(@Valid @RequestBody ProductBeanNoId body) {
         return ResponseEntity.ok(productService.create(body));
     }
 
@@ -52,7 +53,7 @@ public class ProductController {
 
     @PatchMapping(value = "/{id}")
     public ResponseEntity<ProductBean> updateProduct(
-            @PathVariable Long id, @RequestBody ProductBeanNoId body) {
+            @PathVariable Long id, @RequestBody @Valid ProductBeanNoId body) {
         return ResponseEntity.ok(productService.update(id, body));
     }
 

@@ -3,6 +3,7 @@ package daumer.alban.alten.shop.back.products.controller;
 import daumer.alban.alten.shop.back.products.bean.DataListBean;
 import daumer.alban.alten.shop.back.products.bean.ProductBean;
 import daumer.alban.alten.shop.back.products.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class ProductBucketController {
     ProductService productService;
 
     @PostMapping(value="/")
-    public ResponseEntity<HttpStatus> storeBucket(@RequestBody DataListBean<ProductBean> body) {
+    public ResponseEntity<HttpStatus> storeBucket(@Valid @RequestBody DataListBean<ProductBean> body) {
         productService.addAll(body.getData());
         return ResponseEntity.ok(HttpStatus.OK);
     }

@@ -2,27 +2,27 @@ package daumer.alban.alten.shop.back.products.bean;
 
 import daumer.alban.alten.shop.back.products.enums.CategoryEnum;
 import daumer.alban.alten.shop.back.products.enums.InventoryStatusEnum;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Data
 @NoArgsConstructor
 public class ProductBean {
     Long id;
-    @NonNull
+    @NotNull
     String code;
-    @NonNull
+    @NotNull
     String name;
-    @NonNull
+    @NotNull
     String description;
-    @NonNull
+    @NotNull
     Long price;
-    @NonNull
+    @NotNull
     Long quantity;
-    @NonNull
+    @NotNull
     InventoryStatusEnum inventoryStatus;
-    @NonNull
+    @NotNull
     CategoryEnum category;
     // nullable fonctionellement
     String image;
