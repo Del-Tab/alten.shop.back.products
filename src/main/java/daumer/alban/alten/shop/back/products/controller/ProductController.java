@@ -20,23 +20,23 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collection;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping
 public class ProductController {
 
     @Autowired
     ProductService productService;
 
-    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/products", produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<ProductBean> getProducts() {
         return productService.getAll();
     }
 
-    @PostMapping(value = "/")
+    @PostMapping(value = "/products")
     public ResponseEntity<Long> createProduct(@Valid @RequestBody ProductBeanNoId body) {
         return ResponseEntity.ok(productService.create(body));
     }
 
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/products/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ProductBean> getProductDetails(@PathVariable Long id) {
         ProductBean product = productService.getById(id);
         if (product == null) {
@@ -45,13 +45,13 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
-    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/products/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<HttpStatus> deleteAndReturn(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PatchMapping(value = "/{id}")
+    @PatchMapping(value = "/products/{id}")
     public ResponseEntity<ProductBean> updateProduct(
             @PathVariable Long id, @RequestBody @Valid ProductBeanNoId body) {
         return ResponseEntity.ok(productService.update(id, body));
