@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -20,7 +21,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public List<ProductBean> getAll() {
+    public Collection<ProductBean> getAll() {
         return productMapper.map(productRepository.findAll());
+    }
+
+    @Override
+    @Transactional
+    public void addAll(List<ProductBean> products) {
+        productRepository.saveAll(productMapper.mapToEntities(products));
     }
 }
