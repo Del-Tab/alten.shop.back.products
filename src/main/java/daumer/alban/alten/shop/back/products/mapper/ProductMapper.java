@@ -1,8 +1,10 @@
 package daumer.alban.alten.shop.back.products.mapper;
 
 import daumer.alban.alten.shop.back.products.bean.ProductBean;
+import daumer.alban.alten.shop.back.products.bean.ProductBeanNoId;
 import daumer.alban.alten.shop.back.products.model.Product;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -17,6 +19,9 @@ public interface ProductMapper {
     List<ProductBean> map(List<Product> entities);
 
     Product mapToEntity(ProductBean bean);
+
+    @Mapping(target = "id", ignore = true)
+    Product mapNew(ProductBeanNoId bean);
 
     List<Product> mapToEntities(List<ProductBean> beans);
 }

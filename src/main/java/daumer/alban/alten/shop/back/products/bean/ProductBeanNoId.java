@@ -4,11 +4,12 @@ import daumer.alban.alten.shop.back.products.enums.InventoryStatusEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-@Data
+@RequiredArgsConstructor
 @NoArgsConstructor
-public class ProductBean {
-    Long id;
+@Data
+public class ProductBeanNoId {
     @NonNull
     String code;
     @NonNull

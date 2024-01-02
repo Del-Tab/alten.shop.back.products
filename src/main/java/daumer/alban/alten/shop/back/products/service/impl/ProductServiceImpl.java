@@ -1,6 +1,7 @@
 package daumer.alban.alten.shop.back.products.service.impl;
 
 import daumer.alban.alten.shop.back.products.bean.ProductBean;
+import daumer.alban.alten.shop.back.products.bean.ProductBeanNoId;
 import daumer.alban.alten.shop.back.products.mapper.ProductMapper;
 import daumer.alban.alten.shop.back.products.repository.ProductRepository;
 import daumer.alban.alten.shop.back.products.service.ProductService;
@@ -29,5 +30,15 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void addAll(List<ProductBean> products) {
         productRepository.saveAll(productMapper.mapToEntities(products));
+    }
+
+    @Override
+    public ProductBean getById(Long id) {
+        return productMapper.map(productRepository.findById(id).orElse(null));
+    }
+
+    @Override
+    public Long create(ProductBeanNoId body) {
+        return productRepository.save(productMapper.mapNew(body)).getId();
     }
 }
