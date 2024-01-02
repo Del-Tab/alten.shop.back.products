@@ -15,4 +15,6 @@ public interface ProductService {
     ProductBean getById(Long id);
 
     Long create(ProductBeanNoId body);
+
+    void delete(Long id);
 }

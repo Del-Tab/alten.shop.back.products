@@ -41,4 +41,9 @@ public class ProductServiceImpl implements ProductService {
     public Long create(ProductBeanNoId body) {
         return productRepository.save(productMapper.mapNew(body)).getId();
     }
+
+    @Override
+    public void delete(Long id) {
+        productRepository.deleteById(id);
+    }
 }
