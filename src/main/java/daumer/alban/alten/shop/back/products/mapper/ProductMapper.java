@@ -5,6 +5,7 @@ import daumer.alban.alten.shop.back.products.bean.ProductBeanNoId;
 import daumer.alban.alten.shop.back.products.model.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -22,6 +23,9 @@ public interface ProductMapper {
 
     @Mapping(target = "id", ignore = true)
     Product mapNew(ProductBeanNoId bean);
+
+    @Mapping(target = "id", ignore = true)
+    void merge(@MappingTarget Product target, ProductBeanNoId source);
 
     List<Product> mapToEntities(List<ProductBean> beans);
 }

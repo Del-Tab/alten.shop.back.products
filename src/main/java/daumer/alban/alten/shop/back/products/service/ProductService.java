@@ -17,4 +17,6 @@ public interface ProductService {
     Long create(ProductBeanNoId body);
 
     void delete(Long id);
+
+    ProductBean update(Long id, ProductBeanNoId body);
 }
