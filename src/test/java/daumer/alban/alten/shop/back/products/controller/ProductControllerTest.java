@@ -51,6 +51,7 @@ import static org.mockito.Mockito.when;
 @AutoConfigureMockMvc
 class ProductControllerTest {
     private static final Long ID = 1L;
+    private static final Long ANOTHER_ID = 5L;
     private static final String CODE = "code";
     private static final String NAME = "name";
     private static final String DESCRIPTION = "description";
@@ -233,6 +234,16 @@ class ProductControllerTest {
                 .perform(MockMvcRequestBuilders.delete("/products/{id}", ID))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].id", Matchers.everyItem(equalTo(ID.intValue()))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].code", Matchers.everyItem(equalTo(CODE))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].name", Matchers.everyItem(equalTo(NAME))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].description", Matchers.everyItem(equalTo(DESCRIPTION))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].price", Matchers.everyItem(equalTo(PRICE.intValue()))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].quantity", Matchers.everyItem(equalTo(QUANTITY.intValue()))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].inventoryStatus", Matchers.everyItem(equalTo(INVENTORY_STATUS_ENUM.name()))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].category", Matchers.everyItem(equalTo(CATEGORY_ENUM.name()))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].image", Matchers.everyItem(equalTo(IMAGE))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].rating", Matchers.everyItem(equalTo(RATING.intValue()))))
                 .andReturn();
 
         List<Long> allLongs = longArgumentCaptor.getAllValues();
@@ -249,6 +260,39 @@ class ProductControllerTest {
                 .perform(MockMvcRequestBuilders.get("/products/{id}", ID))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andReturn();
+
+        List<Long> allLongs = longArgumentCaptor.getAllValues();
+        assertEquals(1, allLongs.size());
+        assertEquals(ID, allLongs.get(0));
+
+    }
+
+    @Test
+    public void givenAnExistingId_whenGettingItem_thenReturnProductDetails() throws Exception {
+        when(productRepositoryMock.findById(longArgumentCaptor.capture())).thenReturn(Optional.of(new Product(
+                ANOTHER_ID, CODE,
+                NAME,
+                DESCRIPTION,
+                PRICE,
+                QUANTITY,
+                INVENTORY_STATUS_ENUM,
+                CATEGORY_ENUM, IMAGE, RATING)));
+
+        MvcResult mvcResult = mockMvc
+                .perform(MockMvcRequestBuilders.get("/products/{id}", ID))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id", equalTo(ANOTHER_ID.intValue())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code", equalTo(CODE)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name", equalTo(NAME)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.description", equalTo(DESCRIPTION)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.price", equalTo(PRICE.intValue())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.quantity", equalTo(QUANTITY.intValue())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.inventoryStatus", equalTo(INVENTORY_STATUS_ENUM.name())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.category", equalTo(CATEGORY_ENUM.name())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.image", equalTo(IMAGE)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.rating", equalTo(RATING.intValue())))
                 .andReturn();
 
         List<Long> allLongs = longArgumentCaptor.getAllValues();
