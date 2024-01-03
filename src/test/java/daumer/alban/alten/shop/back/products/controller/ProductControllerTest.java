@@ -43,7 +43,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -190,7 +193,7 @@ class ProductControllerTest {
     }
 
     @Test
-    public void givenAJsonBody_whenCreatingItem_thenCallRepositorySaveAndReturnCreatedId() throws Exception {
+    public void givenAJsonBody_whenCreatingProduct_thenCallRepositorySaveAndReturnCreatedId() throws Exception {
         when(productMock.getId()).thenReturn(ID);
         when(productRepositoryMock.save(productArgumentCaptor.capture())).thenReturn(productMock);
         String jsonInput= """
@@ -236,7 +239,7 @@ class ProductControllerTest {
     }
 
     @Test
-    public void givenAnId_whenDeletingItem_thenCallRepositoryDeleteById() throws Exception {
+    public void givenAnId_whenDeletingProduct_thenCallRepositoryDeleteById() throws Exception {
         doNothing().when(productRepositoryMock).deleteById(longArgumentCaptor.capture());
 
         MvcResult mvcResult = mockMvc
@@ -262,7 +265,7 @@ class ProductControllerTest {
     }
 
     @Test
-    public void givenABadId_whenGettingItem_thenReturnNotFound() throws Exception {
+    public void givenABadId_whenGettingProduct_thenReturnNotFound() throws Exception {
         when(productRepositoryMock.findById(longArgumentCaptor.capture())).thenReturn(Optional.empty());
 
         MvcResult mvcResult = mockMvc
@@ -278,7 +281,7 @@ class ProductControllerTest {
     }
 
     @Test
-    public void givenAnExistingId_whenGettingItem_thenReturnProductDetails() throws Exception {
+    public void givenAnExistingId_whenGettingProduct_thenReturnProductDetails() throws Exception {
         when(productRepositoryMock.findById(longArgumentCaptor.capture())).thenReturn(Optional.of(new Product(
                 ANOTHER_ID, CODE,
                 NAME,
@@ -308,6 +311,41 @@ class ProductControllerTest {
         assertEquals(1, allLongs.size());
         assertEquals(ID, allLongs.get(0));
 
+    }
+
+    @Test
+    public void givenABadId_whenPatchingProduct_thenDoNothingAndReturnOkWithNoData() throws Exception {
+        when(productRepositoryMock.findById(longArgumentCaptor.capture())).thenReturn(Optional.empty());
+        verify(productRepositoryMock, never()).save(any());
+        String jsonInput= """
+                {
+                    "code": "%s",
+                    "name": "%s",
+                    "description": "%s",
+                    "price": %d,
+                    "quantity": %d,
+                    "inventoryStatus": "%s",
+                    "category": "%s",
+                    "image": "%s",
+                    "rating": %d
+                }
+                """.formatted(CODE, NAME, DESCRIPTION, PRICE, QUANTITY, INVENTORY_STATUS_ENUM, CATEGORY_ENUM, IMAGE, RATING);
+
+
+        MvcResult mvcResult = mockMvc
+                .perform(MockMvcRequestBuilders.patch("/products/{id}", ID)
+                        .content(jsonInput)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        List<Long> allLongs = longArgumentCaptor.getAllValues();
+        assertEquals(1, allLongs.size());
+        assertEquals(ID, allLongs.get(0));
+
+        assertEquals("", mvcResult.getResponse().getContentAsString());
     }
 
     @Test
