@@ -53,14 +53,23 @@ class ProductControllerTest {
     private static final Long ID = 1L;
     private static final Long ANOTHER_ID = 5L;
     private static final String CODE = "code";
+    private static final String ANOTHER_CODE = "code2";
     private static final String NAME = "name";
+    private static final String ANOTHER_NAME = "name2";
     private static final String DESCRIPTION = "description";
+    private static final String ANOTHER_DESCRIPTION = "description2";
     private static final Long PRICE = 2L;
+    private static final Long ANOTHER_PRICE = 6L;
     private static final Long QUANTITY = 3L;
+    private static final Long ANOTHER_QUANTITY = 7L;
     private static final InventoryStatusEnum INVENTORY_STATUS_ENUM = InventoryStatusEnum.INSTOCK;
+    private static final InventoryStatusEnum ANOTHER_INVENTORY_STATUS_ENUM = InventoryStatusEnum.LOWSTOCK;
     private static final CategoryEnum CATEGORY_ENUM = CategoryEnum.Accessories;
+    private static final CategoryEnum ANOTHER_CATEGORY_ENUM = CategoryEnum.Clothing;
     private static final String IMAGE = "image";
+    private static final String ANOTHER_IMAGE = "image2";
     private static final Long RATING = 4L;
+    private static final Long ANOTHER_RATING = 8L;
 
     @Captor
     private ArgumentCaptor<Product> productArgumentCaptor;
@@ -299,5 +308,69 @@ class ProductControllerTest {
         assertEquals(1, allLongs.size());
         assertEquals(ID, allLongs.get(0));
 
+    }
+
+    @Test
+    public void givenAnExistingId_whenUpdatingItem_thenSaveUpdatedProductAndReturnUpdatedProductDetails() throws Exception {
+        when(productRepositoryMock.findById(longArgumentCaptor.capture())).thenReturn(Optional.of(new Product(
+                ID, ANOTHER_CODE,
+                ANOTHER_NAME,
+                ANOTHER_DESCRIPTION,
+                ANOTHER_PRICE,
+                ANOTHER_QUANTITY,
+                ANOTHER_INVENTORY_STATUS_ENUM,
+                ANOTHER_CATEGORY_ENUM, ANOTHER_IMAGE, ANOTHER_RATING)));
+        when(productRepositoryMock.save(productArgumentCaptor.capture())).thenAnswer(i -> i.getArguments()[0]);
+        String jsonInput= """
+                {
+                    "code": "%s",
+                    "name": "%s",
+                    "description": "%s",
+                    "price": %d,
+                    "quantity": %d,
+                    "inventoryStatus": "%s",
+                    "category": "%s",
+                    "image": "%s",
+                    "rating": %d
+                }
+                """.formatted(CODE, NAME, DESCRIPTION, PRICE, QUANTITY, INVENTORY_STATUS_ENUM, CATEGORY_ENUM, IMAGE, RATING);
+
+
+        MvcResult mvcResult = mockMvc
+                .perform(MockMvcRequestBuilders.patch("/products/{id}", ID)
+                        .content(jsonInput)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id", equalTo(ID.intValue())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code", equalTo(CODE)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name", equalTo(NAME)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.description", equalTo(DESCRIPTION)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.price", equalTo(PRICE.intValue())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.quantity", equalTo(QUANTITY.intValue())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.inventoryStatus", equalTo(INVENTORY_STATUS_ENUM.name())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.category", equalTo(CATEGORY_ENUM.name())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.image", equalTo(IMAGE)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.rating", equalTo(RATING.intValue())))
+                .andReturn();
+
+        List<Long> allLongs = longArgumentCaptor.getAllValues();
+        assertEquals(1, allLongs.size());
+        assertEquals(ID, allLongs.get(0));
+
+        List<Product> allCapturedProducts = productArgumentCaptor.getAllValues();
+        assertEquals(1, allCapturedProducts.size());
+        Product capturedProduct = allCapturedProducts.get(0);
+        assertEquals(ID, capturedProduct.getId());
+        assertEquals(CODE, capturedProduct.getCode());
+        assertEquals(NAME, capturedProduct.getName());
+        assertEquals(DESCRIPTION, capturedProduct.getDescription());
+        assertEquals(PRICE, capturedProduct.getPrice());
+        assertEquals(QUANTITY, capturedProduct.getQuantity());
+        assertEquals(INVENTORY_STATUS_ENUM, capturedProduct.getInventoryStatus());
+        assertEquals(CATEGORY_ENUM, capturedProduct.getCategory());
+        assertEquals(IMAGE, capturedProduct.getImage());
+        assertEquals(RATING, capturedProduct.getRating());
     }
 }

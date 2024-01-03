@@ -51,7 +51,7 @@ public class ProductController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PatchMapping(value = "/products/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/products/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ProductBean> updateProduct(
             @PathVariable Long id, @RequestBody @Valid ProductBeanNoId body) {
         return ResponseEntity.ok(productService.update(id, body));
