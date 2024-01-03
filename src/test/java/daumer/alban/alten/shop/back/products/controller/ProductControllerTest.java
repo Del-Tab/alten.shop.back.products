@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,9 +26,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,27 +42,36 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 class ProductControllerTest {
-    public static final Long ID = 1L;
-    public static final String CODE = "code";
-    public static final String NAME = "name";
-    public static final String DESCRIPTION = "description";
-    public static final Long PRICE = 2L;
-    public static final Long QUANTITY = 3L;
-    public static final InventoryStatusEnum INVENTORY_STATUS_ENUM = InventoryStatusEnum.INSTOCK;
-    public static final CategoryEnum CATEGORY_ENUM = CategoryEnum.Accessories;
-    public static final String IMAGE = "image";
-    public static final Long RATING = 4L;
+    private static final Long ID = 1L;
+    private static final String CODE = "code";
+    private static final String NAME = "name";
+    private static final String DESCRIPTION = "description";
+    private static final Long PRICE = 2L;
+    private static final Long QUANTITY = 3L;
+    private static final InventoryStatusEnum INVENTORY_STATUS_ENUM = InventoryStatusEnum.INSTOCK;
+    private static final CategoryEnum CATEGORY_ENUM = CategoryEnum.Accessories;
+    private static final String IMAGE = "image";
+    private static final Long RATING = 4L;
+
+    @Captor
+    private ArgumentCaptor<Product> productArgumentCaptor;
+
+    @Mock
+    private Product productMock;
+
+    @MockBean
+    private ProductRepository productRepositoryMock;
+
 
     @Autowired
     private WebApplicationContext webApplicationContext;
-    @MockBean
-    private ProductRepository productRepository;
 
     private MockMvc mockMvc;
 
@@ -68,7 +82,7 @@ class ProductControllerTest {
 
     @AfterEach
     public void tearDown() {
-        Mockito.reset(productRepository);
+        Mockito.reset(productRepositoryMock, productMock);
     }
 
     @Test
@@ -83,7 +97,7 @@ class ProductControllerTest {
     @Test
     public void givenNoProduct_whenRequestList_thenReturnsEmptyArrayJson() throws Exception {
         //nb this test is also covered by givenNProducts_whenRequestList_thenReturnsNSizedItemArrayJson(0)
-        when(productRepository.findAll()).thenReturn(Collections.emptyList());
+        when(productRepositoryMock.findAll()).thenReturn(Collections.emptyList());
 
         MvcResult mvcResult = mockMvc
                 .perform(MockMvcRequestBuilders.get("/products")
@@ -98,7 +112,7 @@ class ProductControllerTest {
 
     @Test
     public void givenOneProduct_whenRequestList_thenReturnsSingleItemArrayJson() throws Exception {
-        when(productRepository.findAll()).thenReturn(List.of(new Product(
+        when(productRepositoryMock.findAll()).thenReturn(List.of(new Product(
                 ID, CODE,
                 NAME,
                 DESCRIPTION,
@@ -109,7 +123,7 @@ class ProductControllerTest {
 
         MvcResult mvcResult = mockMvc
                 .perform(MockMvcRequestBuilders.get("/products")
-                        .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8"))
+                        .accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8"))
                 //.andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
@@ -131,7 +145,7 @@ class ProductControllerTest {
     @ParameterizedTest
     @CsvSource({"0", "1", "2", "5", "26", "42042"})
     public void givenNProducts_whenRequestList_thenReturnsNSizedItemArrayJson(int nbElements) throws Exception {
-        when(productRepository.findAll()).thenReturn(Stream.generate(() -> new Product(
+        when(productRepositoryMock.findAll()).thenReturn(Stream.generate(() -> new Product(
                 ID, CODE,
                 NAME,
                 DESCRIPTION,
@@ -142,7 +156,7 @@ class ProductControllerTest {
 
         MvcResult mvcResult = mockMvc
                 .perform(MockMvcRequestBuilders.get("/products")
-                        .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8"))
+                        .accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8"))
                 //.andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(nbElements)))
@@ -159,5 +173,51 @@ class ProductControllerTest {
                 .andReturn();
 
         assertEquals("application/json", mvcResult.getResponse().getContentType());
+    }
+
+    @Test
+    public void givenNothingInParticular_whenCreatingItem_thenCallRepositorySave() throws Exception {
+        when(productMock.getId()).thenReturn(ID);
+        when(productRepositoryMock.save(productArgumentCaptor.capture())).thenReturn(productMock);
+        String jsonInput= """
+                {
+                    "code": "%s",
+                    "name": "%s",
+                    "description": "%s",
+                    "price": %d,
+                    "quantity": %d,
+                    "inventoryStatus": "%s",
+                    "category": "%s",
+                    "image": "%s",
+                    "rating": %d
+                }
+                """.formatted(CODE, NAME, DESCRIPTION, PRICE, QUANTITY, INVENTORY_STATUS_ENUM, CATEGORY_ENUM, IMAGE, RATING);
+
+        MvcResult mvcResult = mockMvc
+                .perform(MockMvcRequestBuilders.post("/products")
+                        .content(jsonInput)
+                        .accept(MediaType.ALL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        List<Product> allCapturedProducts = productArgumentCaptor.getAllValues();
+        assertEquals(1, allCapturedProducts.size());
+        Product capturedProduct = allCapturedProducts.get(0);
+        assertNull(capturedProduct.getId());
+        assertEquals(CODE, capturedProduct.getCode());
+        assertEquals(NAME, capturedProduct.getName());
+        assertEquals(DESCRIPTION, capturedProduct.getDescription());
+        assertEquals(PRICE, capturedProduct.getPrice());
+        assertEquals(QUANTITY, capturedProduct.getQuantity());
+        assertEquals(INVENTORY_STATUS_ENUM, capturedProduct.getInventoryStatus());
+        assertEquals(CATEGORY_ENUM, capturedProduct.getCategory());
+        assertEquals(IMAGE, capturedProduct.getImage());
+        assertEquals(RATING, capturedProduct.getRating());
+
+        assertEquals("%s".formatted(ID), mvcResult.getResponse().getContentAsString());
+
     }
 }
