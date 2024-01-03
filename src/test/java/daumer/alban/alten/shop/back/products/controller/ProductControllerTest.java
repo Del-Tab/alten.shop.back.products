@@ -30,7 +30,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -62,6 +62,9 @@ class ProductControllerTest {
 
     @Captor
     private ArgumentCaptor<Product> productArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<Long> longArgumentCaptor;
 
     @Mock
     private Product productMock;
@@ -176,7 +179,7 @@ class ProductControllerTest {
     }
 
     @Test
-    public void givenNothingInParticular_whenCreatingItem_thenCallRepositorySave() throws Exception {
+    public void givenAJsonBody_whenCreatingItem_thenCallRepositorySaveAndReturnCreatedId() throws Exception {
         when(productMock.getId()).thenReturn(ID);
         when(productRepositoryMock.save(productArgumentCaptor.capture())).thenReturn(productMock);
         String jsonInput= """
@@ -199,7 +202,7 @@ class ProductControllerTest {
                         .accept(MediaType.ALL)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
-                .andDo(MockMvcResultHandlers.print())
+                //.andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
@@ -218,6 +221,22 @@ class ProductControllerTest {
         assertEquals(RATING, capturedProduct.getRating());
 
         assertEquals("%s".formatted(ID), mvcResult.getResponse().getContentAsString());
+
+    }
+
+    @Test
+    public void givenAnId_whenDeletingItem_thenCallRepositoryDeleteById() throws Exception {
+        doNothing().when(productRepositoryMock).deleteById(longArgumentCaptor.capture());
+
+        MvcResult mvcResult = mockMvc
+                .perform(MockMvcRequestBuilders.delete("/products/{id}", ID))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        List<Long> allLongs = longArgumentCaptor.getAllValues();
+        assertEquals(1, allLongs.size());
+        assertEquals(ID, allLongs.get(0));
 
     }
 }
