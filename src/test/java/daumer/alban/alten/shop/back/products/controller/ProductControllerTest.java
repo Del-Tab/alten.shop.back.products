@@ -33,6 +33,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -232,6 +233,22 @@ class ProductControllerTest {
                 .perform(MockMvcRequestBuilders.delete("/products/{id}", ID))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        List<Long> allLongs = longArgumentCaptor.getAllValues();
+        assertEquals(1, allLongs.size());
+        assertEquals(ID, allLongs.get(0));
+
+    }
+
+    @Test
+    public void givenABadId_whenGettingItem_thenReturnNotFound() throws Exception {
+        when(productRepositoryMock.findById(longArgumentCaptor.capture())).thenReturn(Optional.empty());
+
+        MvcResult mvcResult = mockMvc
+                .perform(MockMvcRequestBuilders.get("/products/{id}", ID))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andReturn();
 
         List<Long> allLongs = longArgumentCaptor.getAllValues();
